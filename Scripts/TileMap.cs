@@ -7,6 +7,7 @@ using UnityEngine.UIElements;
 public class TileMap : MonoBehaviour
 {
     // Start is called before the first frame update
+    //https://docs.unity3d.com/ScriptReference/Tilemaps.Tilemap.html
     [SerializeField]
     Tilemap _tileMap;
 
@@ -29,6 +30,7 @@ public class TileMap : MonoBehaviour
                 if(tile != null)
                 {
                     Debug.Log($"Found tile at {i}:{j}");
+                    //https://docs.unity3d.com/ScriptReference/Tilemaps.TileFlags.html
                     _tileMap.SetTileFlags(new Vector3Int(i, j, 0), TileFlags.None);
                     _tileMap.SetColor(new Vector3Int(i, j, 0), Color.red);
                 }
