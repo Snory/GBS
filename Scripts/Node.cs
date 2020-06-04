@@ -15,6 +15,7 @@ public class Node : MonoBehaviour
     public Node(Vector2 worldSpaceCoordination, Vector2 gridCoordination)
     {
         WorldSpaceCoordination = worldSpaceCoordination;
+        GridSpaceCoordination = gridCoordination;
     }
 
     
