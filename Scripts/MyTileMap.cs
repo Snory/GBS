@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
 
-public class TileMap : MonoBehaviour
+public class MyTileMap : MonoBehaviour
 {
     // Start is called before the first frame update
     //https://docs.unity3d.com/ScriptReference/Tilemaps.Tilemap.html
@@ -39,7 +39,8 @@ public class TileMap : MonoBehaviour
                 Debug.Log($"Checking tile at {i}:{j}");
                 Vector3Int tileGridCoordination = new Vector3Int(i, j, 0);
                 TileBase tile = _tileMap.GetTile(tileGridCoordination);
-                if(tile != null)
+                AStartTile astartile = _tileMap.GetTile<AStartTile>(tileGridCoordination);
+                if (tile != null)
                 {
                     Debug.Log($"Found tile at {i}:{j}");
 
@@ -48,8 +49,15 @@ public class TileMap : MonoBehaviour
                     //_tileMap.SetColor(new Vector3Int(i, j, 0), Color.red);
                 }
 
+                if (astartile != null)
+                {
+                    Debug.Log($"Found astar tile at {i}:{j}");
 
-                
+                    //https://docs.unity3d.com/ScriptReference/Tilemaps.TileFlags.html
+                    //_tileMap.SetTileFlags(new Vector3Int(i, j, 0), TileFlags.None);
+                    //_tileMap.SetColor(new Vector3Int(i, j, 0), Color.red);
+                }
+
             }
         }
         
@@ -73,6 +81,9 @@ public class TileMap : MonoBehaviour
             if(hit.collider != null)
             {
                 Debug.Log($"Hit at {hit.collider.transform.position}");
+            } else
+            {
+                Debug.Log($"Nothing");
             }
         }
             
