@@ -22,47 +22,6 @@ public class MyTileMap : MonoBehaviour
         _main = Camera.main;
     }
 
-    void Start()
-    {
-        Debug.Log(_tileMap.size);
-        Debug.Log(_tileMap.cellSize);
-
-        
-        for(int i = _tileMap.origin.x; i < _tileMap.origin.x + _tileMap.size.x; i++)
-        {
-            for(int j = _tileMap.origin.y; j < _tileMap.origin.y + _tileMap.size.y; j++)
-            {
-                Debug.Log($"Checking tile at {i}:{j}");
-                Vector3Int tileGridCoordination = new Vector3Int(i, j, 0);
-                TileBase tile = _tileMap.GetTile(tileGridCoordination);
-                AStarTile astartile = _tileMap.GetTile<AStarTile>(tileGridCoordination);
-                if (tile != null)
-                {
-                    Debug.Log($"Found tile at {i}:{j}");
-
-                    //https://docs.unity3d.com/ScriptReference/Tilemaps.TileFlags.html
-                    //_tileMap.SetTileFlags(new Vector3Int(i, j, 0), TileFlags.None);
-                    //_tileMap.SetColor(new Vector3Int(i, j, 0), Color.red);
-                }
-
-                if (astartile != null)
-                {
-                    Debug.Log($"Found astar tile at {i}:{j}");
-
-                    astartile.GridCoordination = tileGridCoordination;
-                    astartile.TileMap = _tileMap;
-
-                    //https://docs.unity3d.com/ScriptReference/Tilemaps.TileFlags.html
-                    //_tileMap.SetTileFlags(new Vector3Int(i, j, 0), TileFlags.None);
-                    //_tileMap.SetColor(new Vector3Int(i, j, 0), Color.red);
-                }
-
-            }
-        }
-        
-
-    }
-
     // Update is called once per frame
     void Update()
     {

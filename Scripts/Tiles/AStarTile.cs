@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEditor;
+using UnityEditor.Tilemaps;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class AStarTile : Tile, ITilePathFindable
-{
+public class AStarTile { 
 
     public int FCost { get { return GCost + HCost; } }
     public int GCost { get; set; }
@@ -16,33 +16,12 @@ public class AStarTile : Tile, ITilePathFindable
 
     public Tilemap TileMap { get; set; }
 
+    public AStarTile Parent { get; set; }
 
-    public override void RefreshTile(Vector3Int position, ITilemap tilemap)
+
+    public List<Vector3Int> GetNeighborCoordinations()
     {
-        base.RefreshTile(position, tilemap);
-
-
-    }
-
-    public override void GetTileData(Vector3Int position, ITilemap tilemap, ref TileData tileData)
-    {
-        base.GetTileData(position, tilemap, ref tileData);
-
-    }
-
-    [MenuItem("Assets/Create/Tile/AStartTile")]
-    public static void CreateTile()
-    {
-        string path = EditorUtility.SaveFilePanelInProject("Save AStar Tile", "New AStar Tile", "asset", "Save AStar Tile", "Assets");
-        if (path == "")
-            return;
-
-        AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<AStarTile>(), path);
-    }
-
-    public List<AStarTile> GetNeighbor()
-    {
-        List<AStarTile> neighbors = new List<AStarTile>();
+        List<Vector3Int> neighbors = new List<Vector3Int>();
 
         for(int x = -1; x <= 1; x++)
         {
@@ -57,11 +36,11 @@ public class AStarTile : Tile, ITilePathFindable
                 int checkY = GridCoordination.y + y;
 
                 //check if it is inside of our tilemap;
-                AStarTile neighbor = TileMap.GetTile<AStarTile>(new Vector3Int(checkX, checkY, TileMap.origin.z));   
+                TileBase neighbor = TileMap.GetTile(new Vector3Int(checkX, checkY, TileMap.origin.z));   
                 
                 if(neighbor != null)
                 {
-                    neighbors.Add(neighbor);
+                    neighbors.Add(new Vector3Int(checkX, checkY, TileMap.origin.z));
                 }
 
                 
