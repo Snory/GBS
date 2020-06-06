@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.UIElements;
 
 public class MyTileMap : MonoBehaviour
 {
@@ -39,7 +35,7 @@ public class MyTileMap : MonoBehaviour
                 Debug.Log($"Checking tile at {i}:{j}");
                 Vector3Int tileGridCoordination = new Vector3Int(i, j, 0);
                 TileBase tile = _tileMap.GetTile(tileGridCoordination);
-                AStartTile astartile = _tileMap.GetTile<AStartTile>(tileGridCoordination);
+                AStarTile astartile = _tileMap.GetTile<AStarTile>(tileGridCoordination);
                 if (tile != null)
                 {
                     Debug.Log($"Found tile at {i}:{j}");
@@ -52,6 +48,9 @@ public class MyTileMap : MonoBehaviour
                 if (astartile != null)
                 {
                     Debug.Log($"Found astar tile at {i}:{j}");
+
+                    astartile.GridCoordination = tileGridCoordination;
+                    astartile.TileMap = _tileMap;
 
                     //https://docs.unity3d.com/ScriptReference/Tilemaps.TileFlags.html
                     //_tileMap.SetTileFlags(new Vector3Int(i, j, 0), TileFlags.None);
@@ -67,6 +66,8 @@ public class MyTileMap : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        /**
         Vector3 mouseInWorld3 = _main.ScreenToWorldPoint(Input.mousePosition);
         _mouseInWorldPosition = new Vector2(mouseInWorld3.x,mouseInWorld3.y);
         Vector3Int tileCoordinatesInGrid = _tileMap.WorldToCell(new Vector3(_mouseInWorldPosition.x, _mouseInWorldPosition.y, _tileMap.origin.z));
@@ -86,7 +87,7 @@ public class MyTileMap : MonoBehaviour
                 Debug.Log($"Nothing");
             }
         }
-            
+        **/
         
     }
 
