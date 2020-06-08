@@ -6,6 +6,9 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+
+public enum TileType {SQUARE,HEX}
+
 public class PathFinding : MonoBehaviour
 {
     [SerializeField]
@@ -13,38 +16,41 @@ public class PathFinding : MonoBehaviour
 
     [SerializeField]
     Transform _start, _end;
+    IPathFindable[,] _tiles;
 
+    List<IPathFindable> path;
 
-    AStarTile[,] _tiles;
-
-    private void Update()
-    {
-        if(_start != null &&_end != null)
-        {
-            FindPath(_start.position, _end.position);
-        }
-    }
+    [SerializeField]
+    TileType _tileType;
 
     public void Start()
     {
-        _tiles = new AStarTile[_walkableTileMap.size.x, _walkableTileMap.size.y];
+        _tiles = new IPathFindable[_walkableTileMap.size.x, _walkableTileMap.size.y];
 
         for (int i = _walkableTileMap.origin.x; i < _walkableTileMap.origin.x + _walkableTileMap.size.x; i++)
         {
             for (int j = _walkableTileMap.origin.y; j < _walkableTileMap.origin.y + _walkableTileMap.size.y; j++)
             {
                 Vector3Int tileGridCoordination = new Vector3Int(i, j, 0);
-                TileBase tile = _walkableTileMap.GetTile(tileGridCoordination);
+                TileBase tileBase = _walkableTileMap.GetTile(tileGridCoordination);
    
-                if (tile != null)
+                if (tileBase != null)
                 {
+                    IPathFindable currentTile = null;
 
-                    AStarTile aStarTile = new AStarTile();
-
-                    aStarTile.GridCoordination = tileGridCoordination;
-                    aStarTile.TileMap = _walkableTileMap;
-
-                    _tiles[i + Math.Abs(_walkableTileMap.origin.x), j + Math.Abs(_walkableTileMap.origin.y)] = aStarTile;
+                    switch (_tileType)
+                    {
+                        case TileType.SQUARE:
+                            currentTile = new SquareTile();
+                            break;
+                        case TileType.HEX:
+                            currentTile = new HexTile();
+                            break;
+                    }
+                        
+                    currentTile.GridCoordination = tileGridCoordination;
+                    currentTile.TileMap = _walkableTileMap;
+                    _tiles[i + Math.Abs(_walkableTileMap.origin.x), j + Math.Abs(_walkableTileMap.origin.y)] = currentTile;
 
                     //https://docs.unity3d.com/ScriptReference/Tilemaps.TileFlags.html
                     //_tileMap.SetTileFlags(new Vector3Int(i, j, 0), TileFlags.None);
@@ -52,9 +58,69 @@ public class PathFinding : MonoBehaviour
                 }
 
             }
+        }        
+    }
+
+    private void Update()
+    {
+        _walkableTileMap.RefreshAllTiles();
+
+  
+        if (_start != null &&_end != null)
+        {
+            FindPath(_start.position, _end.position);
         }
 
-        
+        Vector3Int startTilePosition = _walkableTileMap.WorldToCell(_start.position);
+        Vector3Int endTilePosition = _walkableTileMap.WorldToCell(_end.position);
+
+        IPathFindable startTile = _tiles[startTilePosition.x + Math.Abs(_walkableTileMap.origin.x), startTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
+        IPathFindable endTile = _tiles[endTilePosition.x + Math.Abs(_walkableTileMap.origin.x), endTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
+
+        path = RetracePath(startTile, endTile);
+        if(path != null)
+        {
+            foreach (IPathFindable tile in path)
+            {
+                _walkableTileMap.SetTileFlags(tile.GridCoordination, TileFlags.None); 
+                _walkableTileMap.SetColor(tile.GridCoordination, Color.red);
+            }
+        }
+  
+        OnClickShowNeighbour();
+    }
+
+
+
+    //for test only
+    private void OnClickShowNeighbour()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 mouseInWorld3 = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3Int tileCoordinatesInGrid = _walkableTileMap.WorldToCell(new Vector3(mouseInWorld3.x, mouseInWorld3.y, _walkableTileMap.origin.z));
+            IPathFindable tile = _tiles[tileCoordinatesInGrid.x + Math.Abs(_walkableTileMap.origin.x), tileCoordinatesInGrid.y + Math.Abs(_walkableTileMap.origin.y)];
+
+            //_tileMap.SetTileFlags(tileCoordinatesInGrid, TileFlags.None);
+            //_tileMap.SetTile(tileCoordinatesInGrid, _base);
+
+            
+            _walkableTileMap.SetTileFlags(tile.GridCoordination, TileFlags.None);
+            _walkableTileMap.SetColor(tile.GridCoordination, Color.red);
+
+            List<Vector3Int> neihbors = tile.GetNeighborCoordinations(0);
+
+    
+            foreach(Vector3Int neighbourCoordination in neihbors)
+            {
+
+                IPathFindable neighbour = _tiles[neighbourCoordination.x + Math.Abs(_walkableTileMap.origin.x), neighbourCoordination.y + Math.Abs(_walkableTileMap.origin.y)];
+                _walkableTileMap.SetTileFlags(neighbour.GridCoordination, TileFlags.None);
+                _walkableTileMap.SetColor(neighbour.GridCoordination, Color.red);
+            }
+            
+
+        }
     }
 
 
@@ -65,22 +131,20 @@ public class PathFinding : MonoBehaviour
         Vector3Int startTilePosition = _walkableTileMap.WorldToCell(startPostion);
         Vector3Int endTilePosition = _walkableTileMap.WorldToCell(endPosition);
 
-        AStarTile startTile = _tiles[startTilePosition.x + Math.Abs(_walkableTileMap.origin.x), startTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
-        AStarTile endTile = _tiles[endTilePosition.x + Math.Abs(_walkableTileMap.origin.x), endTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
+        IPathFindable startTile = _tiles[startTilePosition.x + Math.Abs(_walkableTileMap.origin.x), startTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
+        IPathFindable endTile = _tiles[endTilePosition.x + Math.Abs(_walkableTileMap.origin.x), endTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
 
-        List<AStarTile> openSet = new List<AStarTile>();
-        HashSet<AStarTile> closedSet = new HashSet<AStarTile>();
+        List<IPathFindable> openSet = new List<IPathFindable>();
+        HashSet<IPathFindable> closedSet = new HashSet<IPathFindable>();
 
         openSet.Add(startTile);
 
-        _walkableTileMap.SetTileFlags(startTile.GridCoordination, TileFlags.None);
-        _walkableTileMap.SetColor(startTile.GridCoordination, Color.blue);
 
         while (openSet.Count > 0)
         {
 
             //find note in the open set with lowest fcost
-            AStarTile currentTile = openSet[0];
+            IPathFindable currentTile = openSet[0];
             for(int i = 1; i < openSet.Count; i++)
             {
                 if(openSet[i].FCost < currentTile.FCost || openSet[i].FCost == currentTile.FCost && openSet[i].HCost < currentTile.HCost)
@@ -92,39 +156,35 @@ public class PathFinding : MonoBehaviour
             openSet.Remove(currentTile);
             closedSet.Add(currentTile);
 
-            _walkableTileMap.SetTileFlags(currentTile.GridCoordination, TileFlags.None);
-            _walkableTileMap.SetColor(currentTile.GridCoordination, Color.red);
-
-            if (currentTile == endTile)
+             if (currentTile == endTile)
             {
 
                 return; 
             }
 
             //musime najit sousedy
-            foreach(Vector3Int neighbourCoordination in currentTile.GetNeighborCoordinations())
+            foreach(Vector3Int neighbourCoordination in currentTile.GetNeighborCoordinations(1))
             {
-                AStarTile neighbour = _tiles[neighbourCoordination.x + Math.Abs(_walkableTileMap.origin.x), neighbourCoordination.y + Math.Abs(_walkableTileMap.origin.y)];
+                IPathFindable neighbour = _tiles[neighbourCoordination.x + Math.Abs(_walkableTileMap.origin.x), neighbourCoordination.y + Math.Abs(_walkableTileMap.origin.y)];
                 //walkable, close list
                 if (closedSet.Contains(neighbour))
                 {
                     continue;
                 }
 
-                int newMovementCostToNeighbour = currentTile.GCost + GetDistance(currentTile, neighbour);
+                int newMovementCostToNeighbour = (int)currentTile.GCost + (int)currentTile.GetDistanceTo(neighbour);
 
                 if(newMovementCostToNeighbour < neighbour.GCost || !openSet.Contains(neighbour))
                 {
                     neighbour.GCost = newMovementCostToNeighbour;
-                    neighbour.HCost = GetDistance(neighbour, endTile);
+                    neighbour.HCost = (int) neighbour.GetDistanceTo(endTile);
                     neighbour.Parent = currentTile;
 
                     if (!openSet.Contains(neighbour))
                     {
                         openSet.Add(neighbour);
 
-                        _walkableTileMap.SetTileFlags(neighbour.GridCoordination, TileFlags.None);
-                        _walkableTileMap.SetColor(neighbour.GridCoordination, Color.blue);
+
                     }
                 }
 
@@ -136,32 +196,21 @@ public class PathFinding : MonoBehaviour
     }
 
 
-    private void RetracePath(AStarTile startTile, AStarTile endTile)
+    private List<IPathFindable> RetracePath(IPathFindable startTile, IPathFindable endTile)
     {
-        List<AStarTile> path = new List<AStarTile>();
-        AStarTile currentTile = endTile;
+        List<IPathFindable> path = new List<IPathFindable>();
+        IPathFindable currentTile = endTile;
 
         while(currentTile != startTile)
         {
             path.Add(currentTile);
             currentTile = currentTile.Parent;
         }
+        path.Add(currentTile);
         path.Reverse();
+
+        return path;
     }
 
-    private int GetDistance(AStarTile a, AStarTile b)
-    {
-        int dstx = Math.Abs(a.GridCoordination.x - b.GridCoordination.x);
-        int dsty = Math.Abs(a.GridCoordination.y - b.GridCoordination.y);
 
-        if(dstx > dsty)
-        {
-            return 14 * dsty + 10 * (dstx - dsty);
-        } else
-        {
-            return 14 * dstx + 10 * (dsty - dstx);
-        }
-
-
-    }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public class MyTileMap : MonoBehaviour
@@ -26,28 +27,22 @@ public class MyTileMap : MonoBehaviour
     void Update()
     {
 
-        /**
+ 
         Vector3 mouseInWorld3 = _main.ScreenToWorldPoint(Input.mousePosition);
-        _mouseInWorldPosition = new Vector2(mouseInWorld3.x,mouseInWorld3.y);
-        Vector3Int tileCoordinatesInGrid = _tileMap.WorldToCell(new Vector3(_mouseInWorldPosition.x, _mouseInWorldPosition.y, _tileMap.origin.z));
-        _tileMap.SetTileFlags(tileCoordinatesInGrid, TileFlags.None);
-        //_tileMap.SetColor(tileCoordinatesInGrid, Color.black);
-        _tileMap.SetTile(tileCoordinatesInGrid, _base); 
+      
 
         if (Input.GetMouseButtonDown(0))
         {
-            RaycastHit2D hit = Physics2D.GetRayIntersection(_main.ScreenPointToRay(Input.mousePosition));
+            Vector3Int tileCoordinatesInGrid = _tileMap.WorldToCell(new Vector3(mouseInWorld3.x, mouseInWorld3.y, _tileMap.origin.z));
+            //_tileMap.SetTileFlags(tileCoordinatesInGrid, TileFlags.None);
+            //_tileMap.SetTile(tileCoordinatesInGrid, _base);
 
-            if(hit.collider != null)
-            {
-                Debug.Log($"Hit at {hit.collider.transform.position}");
-            } else
-            {
-                Debug.Log($"Nothing");
-            }
+
+
+
         }
-        **/
-        
+
+
     }
 
 

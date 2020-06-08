@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEditor;
@@ -6,7 +7,7 @@ using UnityEditor.Tilemaps;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class AStarTile { 
+public class SquareTile : IPathFindable { 
 
     public int FCost { get { return GCost + HCost; } }
     public int GCost { get; set; }
@@ -16,10 +17,25 @@ public class AStarTile {
 
     public Tilemap TileMap { get; set; }
 
-    public AStarTile Parent { get; set; }
+    public IPathFindable Parent { get; set; }
 
 
-    public List<Vector3Int> GetNeighborCoordinations()
+    public float GetDistanceTo(IPathFindable a)
+    {
+        int dstx = Math.Abs(this.GridCoordination.x - a.GridCoordination.x);
+        int dsty = Math.Abs(this.GridCoordination.y - a.GridCoordination.y);
+
+        if (dstx > dsty)
+        {
+            return 14 * dsty + 10 * (dstx - dsty);
+        }
+        else
+        {
+            return 14 * dstx + 10 * (dsty - dstx);
+        }
+    }
+
+    public List<Vector3Int> GetNeighborCoordinations(int range)
     {
         List<Vector3Int> neighbors = new List<Vector3Int>();
 
