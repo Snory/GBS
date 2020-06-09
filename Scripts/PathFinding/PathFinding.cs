@@ -23,6 +23,9 @@ public class PathFinding : MonoBehaviour
     [SerializeField]
     TileType _tileType;
 
+    [SerializeField]
+    int _range = 0;
+
     public void Start()
     {
         _tiles = new IPathFindable[_walkableTileMap.size.x, _walkableTileMap.size.y];
@@ -63,29 +66,29 @@ public class PathFinding : MonoBehaviour
 
     private void Update()
     {
-        _walkableTileMap.RefreshAllTiles();
+        //_walkableTileMap.RefreshAllTiles();
 
   
         if (_start != null &&_end != null)
         {
             FindPath(_start.position, _end.position);
-        }
+            Vector3Int startTilePosition = _walkableTileMap.WorldToCell(_start.position);
+            Vector3Int endTilePosition = _walkableTileMap.WorldToCell(_end.position);
 
-        Vector3Int startTilePosition = _walkableTileMap.WorldToCell(_start.position);
-        Vector3Int endTilePosition = _walkableTileMap.WorldToCell(_end.position);
+            IPathFindable startTile = _tiles[startTilePosition.x + Math.Abs(_walkableTileMap.origin.x), startTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
+            IPathFindable endTile = _tiles[endTilePosition.x + Math.Abs(_walkableTileMap.origin.x), endTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
 
-        IPathFindable startTile = _tiles[startTilePosition.x + Math.Abs(_walkableTileMap.origin.x), startTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
-        IPathFindable endTile = _tiles[endTilePosition.x + Math.Abs(_walkableTileMap.origin.x), endTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
-
-        path = RetracePath(startTile, endTile);
-        if(path != null)
-        {
-            foreach (IPathFindable tile in path)
+            path = RetracePath(startTile, endTile);
+            if(path != null)
             {
-                _walkableTileMap.SetTileFlags(tile.GridCoordination, TileFlags.None); 
-                _walkableTileMap.SetColor(tile.GridCoordination, Color.red);
+                foreach (IPathFindable tile in path)
+                {
+                    _walkableTileMap.SetTileFlags(tile.GridCoordination, TileFlags.None); 
+                    _walkableTileMap.SetColor(tile.GridCoordination, Color.red);
+                }
             }
         }
+
   
         OnClickShowNeighbour();
     }
@@ -108,7 +111,7 @@ public class PathFinding : MonoBehaviour
             _walkableTileMap.SetTileFlags(tile.GridCoordination, TileFlags.None);
             _walkableTileMap.SetColor(tile.GridCoordination, Color.red);
 
-            List<Vector3Int> neihbors = tile.GetNeighborCoordinations(0);
+            List<Vector3Int> neihbors = tile.GetNeighborCoordinationsInDistance(_range);
 
     
             foreach(Vector3Int neighbourCoordination in neihbors)
@@ -163,7 +166,7 @@ public class PathFinding : MonoBehaviour
             }
 
             //musime najit sousedy
-            foreach(Vector3Int neighbourCoordination in currentTile.GetNeighborCoordinations(1))
+            foreach(Vector3Int neighbourCoordination in currentTile.GetNeighborCoordinationsInDistance(1))
             {
                 IPathFindable neighbour = _tiles[neighbourCoordination.x + Math.Abs(_walkableTileMap.origin.x), neighbourCoordination.y + Math.Abs(_walkableTileMap.origin.y)];
                 //walkable, close list
@@ -172,12 +175,12 @@ public class PathFinding : MonoBehaviour
                     continue;
                 }
 
-                int newMovementCostToNeighbour = (int)currentTile.GCost + (int)currentTile.GetDistanceTo(neighbour);
+                int newMovementCostToNeighbour = (int)currentTile.GCost + (int)currentTile.GetDistanceToCoordination(neighbourCoordination);
 
                 if(newMovementCostToNeighbour < neighbour.GCost || !openSet.Contains(neighbour))
                 {
                     neighbour.GCost = newMovementCostToNeighbour;
-                    neighbour.HCost = (int) neighbour.GetDistanceTo(endTile);
+                    neighbour.HCost = (int) neighbour.GetDistanceToCoordination(endTilePosition);
                     neighbour.Parent = currentTile;
 
                     if (!openSet.Contains(neighbour))

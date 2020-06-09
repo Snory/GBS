@@ -16,7 +16,7 @@ public interface IPathFindable
     IPathFindable Parent { get; set; }
 
 
-    List<Vector3Int> GetNeighborCoordinations(int range);
+    List<Vector3Int> GetNeighborCoordinationsInDistance(int distance);
 
-    float GetDistanceTo(IPathFindable a);
+    float GetDistanceToCoordination(Vector3Int a);
 }

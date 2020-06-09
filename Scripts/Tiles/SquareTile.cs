@@ -20,10 +20,10 @@ public class SquareTile : IPathFindable {
     public IPathFindable Parent { get; set; }
 
 
-    public float GetDistanceTo(IPathFindable a)
+    public float GetDistanceToCoordination(Vector3Int a)
     {
-        int dstx = Math.Abs(this.GridCoordination.x - a.GridCoordination.x);
-        int dsty = Math.Abs(this.GridCoordination.y - a.GridCoordination.y);
+        int dstx = Math.Abs(this.GridCoordination.x - a.x);
+        int dsty = Math.Abs(this.GridCoordination.y - a.y);
 
         if (dstx > dsty)
         {
@@ -35,7 +35,7 @@ public class SquareTile : IPathFindable {
         }
     }
 
-    public List<Vector3Int> GetNeighborCoordinations(int range)
+    public List<Vector3Int> GetNeighborCoordinationsInDistance(int range)
     {
         List<Vector3Int> neighbors = new List<Vector3Int>();
 
