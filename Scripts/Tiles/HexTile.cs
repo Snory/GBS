@@ -7,7 +7,7 @@ using UnityEngine.Tilemaps;
 
 public enum Direction {LEFT, RIGHT};
 
-public class HexTile : IPathFindable
+public class HexTile : IHeapItem<HexTile>
 {
     public int FCost { get { return GCost + HCost; } }
 
@@ -15,7 +15,9 @@ public class HexTile : IPathFindable
     public int HCost { get; set; }
     public Vector3Int GridCoordination { get; set; }
     public Tilemap TileMap { get; set; }
-    public IPathFindable Parent { get; set; }
+    public HexTile Parent { get; set; }
+    private int _heapindex;
+    public int HeapIndex { get { return _heapindex; } set { _heapindex = value; } }
 
     public Dictionary<Direction, int[,]> oddHexTileDirectionsCoordinates;
     public Dictionary<Direction, int[,]> evenHexTileDirectionsCoordinates;
@@ -118,5 +120,13 @@ public class HexTile : IPathFindable
         return neighbors;
     }
 
-
+    public int CompareTo(HexTile other)
+    {
+        int compare = FCost.CompareTo(other.FCost);
+        if(compare == 0)
+        {
+            compare = HCost.CompareTo(other.HCost);
+        }
+        return -compare;
+    }
 }

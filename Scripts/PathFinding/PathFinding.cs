@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 
-public enum TileType {SQUARE,HEX}
 
 public class PathFinding : MonoBehaviour
 {
@@ -16,19 +15,18 @@ public class PathFinding : MonoBehaviour
 
     [SerializeField]
     Transform _start, _end;
-    IPathFindable[,] _tiles;
+    HexTile[,] _tiles;
 
-    List<IPathFindable> path;
-
-    [SerializeField]
-    TileType _tileType;
+    List<HexTile> path;
 
     [SerializeField]
     int _range = 0;
 
+
+
     public void Start()
     {
-        _tiles = new IPathFindable[_walkableTileMap.size.x, _walkableTileMap.size.y];
+        _tiles = new HexTile[_walkableTileMap.size.x, _walkableTileMap.size.y];
 
         for (int i = _walkableTileMap.origin.x; i < _walkableTileMap.origin.x + _walkableTileMap.size.x; i++)
         {
@@ -39,17 +37,7 @@ public class PathFinding : MonoBehaviour
    
                 if (tileBase != null)
                 {
-                    IPathFindable currentTile = null;
-
-                    switch (_tileType)
-                    {
-                        case TileType.SQUARE:
-                            currentTile = new SquareTile();
-                            break;
-                        case TileType.HEX:
-                            currentTile = new HexTile();
-                            break;
-                    }
+                    HexTile currentTile = new HexTile();              
                         
                     currentTile.GridCoordination = tileGridCoordination;
                     currentTile.TileMap = _walkableTileMap;
@@ -66,7 +54,7 @@ public class PathFinding : MonoBehaviour
 
     private void Update()
     {
-        //_walkableTileMap.RefreshAllTiles();
+        _walkableTileMap.RefreshAllTiles();
 
   
         if (_start != null &&_end != null)
@@ -75,13 +63,13 @@ public class PathFinding : MonoBehaviour
             Vector3Int startTilePosition = _walkableTileMap.WorldToCell(_start.position);
             Vector3Int endTilePosition = _walkableTileMap.WorldToCell(_end.position);
 
-            IPathFindable startTile = _tiles[startTilePosition.x + Math.Abs(_walkableTileMap.origin.x), startTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
-            IPathFindable endTile = _tiles[endTilePosition.x + Math.Abs(_walkableTileMap.origin.x), endTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
+            HexTile startTile = _tiles[startTilePosition.x + Math.Abs(_walkableTileMap.origin.x), startTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
+            HexTile endTile = _tiles[endTilePosition.x + Math.Abs(_walkableTileMap.origin.x), endTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
 
             path = RetracePath(startTile, endTile);
             if(path != null)
             {
-                foreach (IPathFindable tile in path)
+                foreach (HexTile tile in path)
                 {
                     _walkableTileMap.SetTileFlags(tile.GridCoordination, TileFlags.None); 
                     _walkableTileMap.SetColor(tile.GridCoordination, Color.red);
@@ -90,7 +78,7 @@ public class PathFinding : MonoBehaviour
         }
 
   
-        OnClickShowNeighbour();
+       // OnClickShowNeighbour();
     }
 
 
@@ -102,7 +90,7 @@ public class PathFinding : MonoBehaviour
         {
             Vector3 mouseInWorld3 = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector3Int tileCoordinatesInGrid = _walkableTileMap.WorldToCell(new Vector3(mouseInWorld3.x, mouseInWorld3.y, _walkableTileMap.origin.z));
-            IPathFindable tile = _tiles[tileCoordinatesInGrid.x + Math.Abs(_walkableTileMap.origin.x), tileCoordinatesInGrid.y + Math.Abs(_walkableTileMap.origin.y)];
+            HexTile tile = _tiles[tileCoordinatesInGrid.x + Math.Abs(_walkableTileMap.origin.x), tileCoordinatesInGrid.y + Math.Abs(_walkableTileMap.origin.y)];
 
             //_tileMap.SetTileFlags(tileCoordinatesInGrid, TileFlags.None);
             //_tileMap.SetTile(tileCoordinatesInGrid, _base);
@@ -117,7 +105,7 @@ public class PathFinding : MonoBehaviour
             foreach(Vector3Int neighbourCoordination in neihbors)
             {
 
-                IPathFindable neighbour = _tiles[neighbourCoordination.x + Math.Abs(_walkableTileMap.origin.x), neighbourCoordination.y + Math.Abs(_walkableTileMap.origin.y)];
+                HexTile neighbour = _tiles[neighbourCoordination.x + Math.Abs(_walkableTileMap.origin.x), neighbourCoordination.y + Math.Abs(_walkableTileMap.origin.y)];
                 _walkableTileMap.SetTileFlags(neighbour.GridCoordination, TileFlags.None);
                 _walkableTileMap.SetColor(neighbour.GridCoordination, Color.red);
             }
@@ -131,14 +119,15 @@ public class PathFinding : MonoBehaviour
     {
 
 
+
         Vector3Int startTilePosition = _walkableTileMap.WorldToCell(startPostion);
         Vector3Int endTilePosition = _walkableTileMap.WorldToCell(endPosition);
 
-        IPathFindable startTile = _tiles[startTilePosition.x + Math.Abs(_walkableTileMap.origin.x), startTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
-        IPathFindable endTile = _tiles[endTilePosition.x + Math.Abs(_walkableTileMap.origin.x), endTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
+        HexTile startTile = _tiles[startTilePosition.x + Math.Abs(_walkableTileMap.origin.x), startTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
+        HexTile endTile = _tiles[endTilePosition.x + Math.Abs(_walkableTileMap.origin.x), endTilePosition.y + Math.Abs(_walkableTileMap.origin.y)];
 
-        List<IPathFindable> openSet = new List<IPathFindable>();
-        HashSet<IPathFindable> closedSet = new HashSet<IPathFindable>();
+        Heap<HexTile> openSet = new Heap<HexTile>(_tiles.Length);
+        HashSet<HexTile> closedSet = new HashSet<HexTile>();
 
         openSet.Add(startTile);
 
@@ -147,16 +136,7 @@ public class PathFinding : MonoBehaviour
         {
 
             //find note in the open set with lowest fcost
-            IPathFindable currentTile = openSet[0];
-            for(int i = 1; i < openSet.Count; i++)
-            {
-                if(openSet[i].FCost < currentTile.FCost || openSet[i].FCost == currentTile.FCost && openSet[i].HCost < currentTile.HCost)
-                { 
-                    currentTile = openSet[i]; 
-                }
-            }
-
-            openSet.Remove(currentTile);
+            HexTile currentTile = openSet.RemoveFirst();
             closedSet.Add(currentTile);
 
              if (currentTile == endTile)
@@ -165,10 +145,12 @@ public class PathFinding : MonoBehaviour
                 return; 
             }
 
+            Debug.Log("Before foreach");
             //musime najit sousedy
             foreach(Vector3Int neighbourCoordination in currentTile.GetNeighborCoordinationsInDistance(1))
             {
-                IPathFindable neighbour = _tiles[neighbourCoordination.x + Math.Abs(_walkableTileMap.origin.x), neighbourCoordination.y + Math.Abs(_walkableTileMap.origin.y)];
+                Debug.Log("foreach");
+                HexTile neighbour = _tiles[neighbourCoordination.x + Math.Abs(_walkableTileMap.origin.x), neighbourCoordination.y + Math.Abs(_walkableTileMap.origin.y)];
                 //walkable, close list
                 if (closedSet.Contains(neighbour))
                 {
@@ -193,16 +175,18 @@ public class PathFinding : MonoBehaviour
 
             }
 
+            Debug.Log("After foreach");
+
 
 
         }
     }
 
 
-    private List<IPathFindable> RetracePath(IPathFindable startTile, IPathFindable endTile)
+    private List<HexTile> RetracePath(HexTile startTile, HexTile endTile)
     {
-        List<IPathFindable> path = new List<IPathFindable>();
-        IPathFindable currentTile = endTile;
+        List<HexTile> path = new List<HexTile>();
+        HexTile currentTile = endTile;
 
         while(currentTile != startTile)
         {

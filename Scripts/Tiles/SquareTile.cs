@@ -7,7 +7,7 @@ using UnityEditor.Tilemaps;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class SquareTile : IPathFindable { 
+public class SquareTile  { 
 
     public int FCost { get { return GCost + HCost; } }
     public int GCost { get; set; }
@@ -17,7 +17,7 @@ public class SquareTile : IPathFindable {
 
     public Tilemap TileMap { get; set; }
 
-    public IPathFindable Parent { get; set; }
+    public SquareTile Parent { get; set; }
 
 
     public float GetDistanceToCoordination(Vector3Int a)
