@@ -14,10 +14,12 @@ public class HexTile : IPathFindable
     public int GCost { get; set; }
     public int HCost { get; set; }
     public Vector3Int GridCoordination { get; set; }
-    public Tilemap TileMap { get; set; }
+
     public IPathFindable Parent { get; set; }
+    public Vector3 WorldCoordination { get; set; }
 
     public Dictionary<Direction, int[,]> oddHexTileDirectionsCoordinates;
+
     public Dictionary<Direction, int[,]> evenHexTileDirectionsCoordinates;
 
     public float GetDistanceToCoordination(Vector3Int a)
@@ -31,14 +33,6 @@ public class HexTile : IPathFindable
 
 
         return Mathf.Max(Mathf.Abs(y1 - y2), Mathf.Abs(x1 - x2) +  Mathf.Floor(Mathf.Abs(y1 - y2)/2) + penalty) ;
-    }
-
-    public List<Vector3Int> GetNeighborCoordinationsInDirectionAndDistance(Direction direction, int distance)
-    {
-        List<Vector3Int> neighbors = new List<Vector3Int>();
-
-
-        return neighbors;
     }
 
     public List<Vector3Int> GetNeighborCoordinationsInDistance(int distance)
@@ -93,9 +87,9 @@ public class HexTile : IPathFindable
                 }
 
 
-                Vector3Int neighborCoordination = new Vector3Int(checkX, checkY, TileMap.origin.z);
+                Vector3Int neighborCoordination = new Vector3Int(checkX, checkY, PathFinding.Instance.WalkableTileMap.origin.z);
      
-                TileBase neighbor = TileMap.GetTile(neighborCoordination);
+                TileBase neighbor = PathFinding.Instance.WalkableTileMap.GetTile(neighborCoordination);
 
    
                 if (neighbor != null && GetDistanceToCoordination(neighborCoordination) <= distance)

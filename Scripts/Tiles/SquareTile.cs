@@ -15,10 +15,9 @@ public class SquareTile : IPathFindable {
 
     public Vector3Int GridCoordination { get; set; }
 
-    public Tilemap TileMap { get; set; }
 
     public IPathFindable Parent { get; set; }
-
+    public Vector3 WorldCoordination { get; set; }
 
     public float GetDistanceToCoordination(Vector3Int a)
     {
@@ -52,11 +51,11 @@ public class SquareTile : IPathFindable {
                 int checkY = GridCoordination.y + y;
 
                 //check if it is inside of our tilemap;
-                TileBase neighbor = TileMap.GetTile(new Vector3Int(checkX, checkY, TileMap.origin.z));   
+                TileBase neighbor = PathFinding.Instance.WalkableTileMap.GetTile(new Vector3Int(checkX, checkY, PathFinding.Instance.WalkableTileMap.origin.z));   
                 
                 if(neighbor != null)
                 {
-                    neighbors.Add(new Vector3Int(checkX, checkY, TileMap.origin.z));
+                    neighbors.Add(new Vector3Int(checkX, checkY, PathFinding.Instance.WalkableTileMap.origin.z));
                 }
 
                 

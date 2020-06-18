@@ -10,8 +10,7 @@ public interface IPathFindable
     int HCost { get; set; }
 
     Vector3Int GridCoordination { get; set; }
-
-    Tilemap TileMap { get; set; }
+    Vector3 WorldCoordination { get; set; }
 
     IPathFindable Parent { get; set; }
 

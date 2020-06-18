@@ -29,9 +29,22 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         PhotonNetwork.ConnectUsingSettings();
     }
 
-    public override void OnConnectedToMaster()
+    public void CreateOrJoinRoom()
     {
-        Debug.Log("Connected to server");
-
+        if(PhotonNetwork.CountOfRooms > 0)
+        {
+            PhotonNetwork.JoinRandomRoom();
+        } else
+        {
+            RoomOptions options = new RoomOptions();
+            options.MaxPlayers = 2;
+            PhotonNetwork.CreateRoom(null, options);
+        }
     }
+
+    public void ChangeScene (string sceneName)
+    {
+        PhotonNetwork.LoadLevel(sceneName);
+    }
+
 }
