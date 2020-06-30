@@ -5,22 +5,47 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 
-public enum Direction {LEFT, RIGHT};
+public enum Direction {LEFTTOP, RIGHTTOP, LEFT, RIGHT, LEFTBOT, RIGHTBOT};
 
-public class HexTile : IPathFindable
+public class HexTile
 {
     public int FCost { get { return GCost + HCost; } }
-
     public int GCost { get; set; }
     public int HCost { get; set; }
     public Vector3Int GridCoordination { get; set; }
-
-    public IPathFindable Parent { get; set; }
     public Vector3 WorldCoordination { get; set; }
+
+    public GameObject OccupiedBy { get; set; }
+
+    public HexTile Parent { get; set; }
 
     public Dictionary<Direction, int[,]> oddHexTileDirectionsCoordinates;
 
     public Dictionary<Direction, int[,]> evenHexTileDirectionsCoordinates;
+
+    public HexTile()
+    {
+        oddHexTileDirectionsCoordinates = new Dictionary<Direction, int[,]>();
+        evenHexTileDirectionsCoordinates = new Dictionary<Direction, int[,]>();
+
+        evenHexTileDirectionsCoordinates.Add(Direction.LEFTTOP   , new int[1, 2] { { -1, 1 }});
+        evenHexTileDirectionsCoordinates.Add(Direction.RIGHTTOP  , new int[1, 2] { { -1, 0 }});
+        evenHexTileDirectionsCoordinates.Add(Direction.LEFT      , new int[1, 2] { { -1, -1 }});
+        evenHexTileDirectionsCoordinates.Add(Direction.RIGHT     , new int[1, 2] { { 0, -1 }});
+        evenHexTileDirectionsCoordinates.Add(Direction.LEFTBOT   , new int[1, 2] { { 1, 0 }});
+        evenHexTileDirectionsCoordinates.Add(Direction.RIGHTBOT  , new int[1, 2] { { 0, 1 }});
+
+        oddHexTileDirectionsCoordinates.Add(Direction.LEFTTOP , new int[1, 2] { { -1, 0 } });
+        oddHexTileDirectionsCoordinates.Add(Direction.RIGHTTOP, new int[1, 2] { { 1, 0 } });
+        oddHexTileDirectionsCoordinates.Add(Direction.LEFT    , new int[1, 2] { { 0, -1 } });
+        oddHexTileDirectionsCoordinates.Add(Direction.RIGHT   , new int[1, 2] { { 1, -1 } });
+        oddHexTileDirectionsCoordinates.Add(Direction.LEFTBOT , new int[1, 2] { { 0, 1 } });
+        oddHexTileDirectionsCoordinates.Add(Direction.RIGHTBOT, new int[1, 2] { { 1, 1 } });
+
+
+    }
+
+ 
 
     public float GetDistanceToCoordination(Vector3Int a)
     {
@@ -35,6 +60,7 @@ public class HexTile : IPathFindable
         return Mathf.Max(Mathf.Abs(y1 - y2), Mathf.Abs(x1 - x2) +  Mathf.Floor(Mathf.Abs(y1 - y2)/2) + penalty) ;
     }
 
+
     public List<Vector3Int> GetNeighborCoordinationsInDistance(int distance)
     {
         List<Vector3Int> neighbors = new List<Vector3Int>();
@@ -42,23 +68,23 @@ public class HexTile : IPathFindable
         List<Vector3Int> ScannedNodes = new List<Vector3Int>();
 
         //http://ondras.github.io/rot.js/manual/#hex/indexing
-        int[][,] evenOdd = new int[6][,];
-        evenOdd[0] = new int[1,2]  { { -1, 1 } };
-        evenOdd[1] = new int[1, 2] { { -1, 0 } };
-        evenOdd[2] = new int[1, 2] { { -1, -1 } };
-        evenOdd[3] = new int[1, 2] { { 0, -1 } };
-        evenOdd[4] = new int[1, 2] { { 1, 0 } };
-        evenOdd[5] = new int[1, 2] { { 0, 1 } };
+        int[][,] arrayEven = new int[6][,];
+        arrayEven[0] = evenHexTileDirectionsCoordinates[Direction.LEFTTOP];
+        arrayEven[1] = evenHexTileDirectionsCoordinates[Direction.RIGHTTOP];
+        arrayEven[2] = evenHexTileDirectionsCoordinates[Direction.LEFT];
+        arrayEven[3] = evenHexTileDirectionsCoordinates[Direction.RIGHT];
+        arrayEven[4] = evenHexTileDirectionsCoordinates[Direction.LEFTBOT];
+        arrayEven[5] = evenHexTileDirectionsCoordinates[Direction.RIGHTBOT];
 
         int[][,] arrayOdd = new int[6][,];
-        arrayOdd[0] = new int[1, 2] { { -1, 0 } };
-        arrayOdd[1] = new int[1, 2] { { 1, 0 } };
-        arrayOdd[2] = new int[1, 2] { { 0, -1 } };
-        arrayOdd[3] = new int[1, 2] { { 1, -1 } };
-        arrayOdd[4] = new int[1, 2] { { 0, 1 } };
-        arrayOdd[5] = new int[1, 2] { { 1, 1 } };
-            
-       
+        arrayOdd[0] = oddHexTileDirectionsCoordinates[Direction.LEFTTOP];
+        arrayOdd[1] = oddHexTileDirectionsCoordinates[Direction.RIGHTTOP];
+        arrayOdd[2] = oddHexTileDirectionsCoordinates[Direction.LEFT];
+        arrayOdd[3] = oddHexTileDirectionsCoordinates[Direction.RIGHT];
+        arrayOdd[4] = oddHexTileDirectionsCoordinates[Direction.LEFTBOT];
+        arrayOdd[5] = oddHexTileDirectionsCoordinates[Direction.RIGHTBOT];
+
+
         notScannedNodes.Add(this.GridCoordination);
 
         while (notScannedNodes.Count > 0)
@@ -75,8 +101,8 @@ public class HexTile : IPathFindable
                 if (odd == 0)
                 {
 
-                    checkX = currentTileCoordination.x + evenOdd[x][0, 0];
-                    checkY = currentTileCoordination.y + evenOdd[x][0, 1];
+                    checkX = currentTileCoordination.x + arrayEven[x][0, 0];
+                    checkY = currentTileCoordination.y + arrayEven[x][0, 1];
                 }
                 else
                 {
@@ -87,9 +113,9 @@ public class HexTile : IPathFindable
                 }
 
 
-                Vector3Int neighborCoordination = new Vector3Int(checkX, checkY, PathFinding.Instance.WalkableTileMap.origin.z);
-     
-                TileBase neighbor = PathFinding.Instance.WalkableTileMap.GetTile(neighborCoordination);
+                Vector3Int neighborCoordination = new Vector3Int(checkX, checkY, PathFinding.Instance.WalkableGrid.Tilemap.origin.z);
+
+                HexTile neighbor = PathFinding.Instance.WalkableGrid.GetHexTileOnGridPosition(neighborCoordination);
 
    
                 if (neighbor != null && GetDistanceToCoordination(neighborCoordination) <= distance)

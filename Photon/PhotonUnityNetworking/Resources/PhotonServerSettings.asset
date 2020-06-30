@@ -33,6 +33,10 @@ MonoBehaviour:
   RpcList:
   - ClickRpc
   - DestroyRpc
+  - UpdateLobbyUI
+  - ChangeScene
+  - Initialize
+  - SetNextTurn
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 0

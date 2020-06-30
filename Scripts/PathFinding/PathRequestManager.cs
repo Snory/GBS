@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-public delegate void PathResult(IPathFindable[] path, bool result);
+public delegate void PathResult(HexTile[] path, bool result);
 
 public class PathRequestManager : Singleton<PathRequestManager>
 {
@@ -37,7 +37,7 @@ public class PathRequestManager : Singleton<PathRequestManager>
 
     }
 
-    public void PathProcessingFinished(IPathFindable[] path, bool success)
+    public void PathProcessingFinished(HexTile[] path, bool success)
     {
         _currentPathRequest._pathResultCallback(path, success);
         _isProcessing = false;
